@@ -35,10 +35,13 @@ export default {
 		} 
 
 		today = yyyy+'-'+mm+'-'+dd;
-		return axios({
-			method: 'get',
-			url: '/twits/allTwits',
-			headers: {q: 'overwatch since:'+today, count: 50}
-		});
+		let options = {
+			method: 'GET',
+			timeout: 10,
+			headers: {
+				q: 'overwatch since:'+today, count: 50
+			}
+		};
+		return fetch(Urls.twits, options);
 	}
 }
