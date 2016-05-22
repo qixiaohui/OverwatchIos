@@ -3,7 +3,7 @@ import Urls from '../util/urls'
 
 export default {
 	getHeros: function(){
-		return axios.get('/heros/allheros');
+		return fetch(Urls.heros);
 	},
 	getDingDangNews: function(index) {
 		let options = {
@@ -16,6 +16,9 @@ export default {
 		};
 
 		return fetch(Urls.news, options);
+	},
+	getTwitch: function(){
+		return fetch(Urls.twitch);
 	},
 	getTwits: function(){
 		var today = new Date();
