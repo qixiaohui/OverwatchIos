@@ -5,7 +5,8 @@ import {
   Text,
   View,
   Image,
-  ListView
+  ListView,
+  ActivityIndicatorIOS
 } from 'react-native';
 import HttpService from '../service/HttpService';
 import _ from 'underscore';
@@ -13,6 +14,7 @@ export default class PicComponent extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
+			loading: true,
 			dataSource: new ListView.DataSource({
     			rowHasChanged: (row1, row2) => row1 !== row2,        
 			}),
@@ -24,6 +26,7 @@ export default class PicComponent extends Component{
 	getHeros = () => {
 		HttpService.getHeros().then((response) => response.json()).then((response) => {
 			this.setState({
+				loading: false,
 				dataSource: this.state.dataSource.cloneWithRows(response),
 			});
 		}).catch((response) => {
@@ -31,12 +34,21 @@ export default class PicComponent extends Component{
 		}).done();
 	}
 	render() {
-		return(
-	      <ListView contentContainerStyle={styles.list}
-	        dataSource={this.state.dataSource}
-	        renderRow={this.renderRow.bind(this)}
-	      />
-		);
+		if(this.state.loading){
+			return (
+				<View style={styles.loading}>
+					<ActivityIndicatorIOS
+		            size="large" />
+				</View>
+			);
+		}else{
+			return(
+		      <ListView contentContainerStyle={styles.list}
+		        dataSource={this.state.dataSource}
+		        renderRow={this.renderRow.bind(this)}
+		      />
+			);
+		}
 	}
 	renderRow = (item) => {
 		return(
@@ -50,7 +62,7 @@ export default class PicComponent extends Component{
 
 var styles = StyleSheet.create({
 	list: {
-	    justifyContent: 'center',
+	    justifyContent: 'space-around',
 	    flexDirection: 'row',
 	    flexWrap: 'wrap',
 	    backgroundColor: '#000000'
@@ -67,5 +79,11 @@ var styles = StyleSheet.create({
 		fontSize: 15,
 		color: '#ff8000',
 		margin: 5
-	}
+	},
+	loading: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: '#000000'
+	},
 });

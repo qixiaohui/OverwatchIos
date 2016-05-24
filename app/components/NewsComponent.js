@@ -5,14 +5,19 @@ import {
   Text,
   View,
   ListView,
-  Image
+  NavigatorIOS,
+  TouchableHighlight,
+  Image,
+  ActivityIndicatorIOS
 } from 'react-native';
 import HttpService from '../service/HttpService'
 import _ from 'underscore'
+import WebContentComponent from './WebContentComponent'
 export default class NewsComponent extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
+			loading: true,
 			news: null,
 			dataSource: new ListView.DataSource({
     			rowHasChanged: (row1, row2) => row1 !== row2,        
@@ -24,32 +29,53 @@ export default class NewsComponent extends Component{
 			this.state.news = response.results;
 			this.setState({
 				dataSource: this.state.dataSource.cloneWithRows(this.state.news),
+				loading: false
 			});
+
 		}).catch((response) => {
 			console.error(response);
 		}).done();
 	}
 	render() {
-		return(
-			<View style={{flex: 1}}>
-			  <ListView
-				dataSource={this.state.dataSource}
-				renderRow={this.renderRow.bind(this)}
-				style={styles.listView}
-			  />
-			</View>
-		);
-	}
-	renderRow = (row) => {
-		return(
-			<View style={styles.newsCard}>
-				{row.iurl?<Image style={styles.newsImg} source={{uri: row.iurl}} />:null}
-				<Text style={styles.newsTitle}>{row.title}</Text>
-				<View style={{flex: 1, flexDirection: 'row'}}>
-					{row.author?<Text style={styles.author}>{row.author}</Text>:null}
-					{row.domain?<Text style={styles.domain}>{row.domain}</Text>:null}
+		if(this.state.loading){
+			return (
+				<View style={styles.loading}>
+					<ActivityIndicatorIOS
+		            size="large" />
 				</View>
-			</View>
+			);
+		}else{
+			return(
+				<View style={styles.container}>
+				  <ListView
+					dataSource={this.state.dataSource}
+					renderRow={this.renderRow.bind(this)}
+					style={styles.listView}
+				  />
+				</View>
+			);
+		}
+	}
+	forward = (row) => {
+		this.props.navigator.push({
+			title: row.domain,
+			component: WebContentComponent,
+			navigationBarHidden: false,
+			passProps: {url: row.url}
+		});
+	}
+ 	renderRow = (row) => {
+		return(
+			<TouchableHighlight onPress={() => {this.forward(row)}}>
+				<View style={styles.newsCard}>
+					{row.iurl?<Image style={styles.newsImg} source={{uri: row.iurl}} />:null}
+					<Text style={styles.newsTitle}>{row.title}</Text>
+					<View style={{flex: 1, flexDirection: 'row'}}>
+						{row.author?<Text style={styles.author}>{row.author}</Text>:null}
+						{row.domain?<Text style={styles.domain}>{row.domain}</Text>:null}
+					</View>
+				</View>
+			</TouchableHighlight>
 		);
 	}
 	componentDidMount() {
@@ -58,6 +84,9 @@ export default class NewsComponent extends Component{
 }
 
 var styles = StyleSheet.create({
+  container: {
+  	flex: 1
+  },
   listView: {
     paddingTop: 5,
     backgroundColor: '#000000'
@@ -86,5 +115,11 @@ var styles = StyleSheet.create({
   newsCard: {
   	margin: 5,
   	backgroundColor: '#424242'
-  }
+  },
+  loading: {
+  	flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000'
+  },
 });

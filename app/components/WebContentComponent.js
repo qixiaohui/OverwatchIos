@@ -4,18 +4,17 @@ import {
   StyleSheet,
   Text,
   View,
-  ActivityIndicatorIOS
+  WebView
 } from 'react-native';
 import _ from 'underscore'
-import WebContentComponent from './WebContentComponent'
-export default class SupportComponent extends Component{
+export default class NewsContentComponent extends Component{
 	constructor(props){
 		super(props);
 		this.state = {};
 	}
 	render() {
-		return(<View>
-				<Text>news</Text>
+		return(<View style={{flex: 1}}>
+				<WebView source={{uri: this.props.url}} />
 			</View>);
 	}
 }
