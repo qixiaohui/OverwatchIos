@@ -18,21 +18,41 @@ export default class TwitchComponent extends Component{
 		this.state = {	
 			loading: true,		
 			streams: null,
+			size: 0,
+			index: 1,
 			dataSource: new ListView.DataSource({
     			rowHasChanged: (row1, row2) => row1 !== row2,        
 			}),
 		};
 	}
 	getTwitch = () => {
-		HttpService.getTwitch().then((response) => response.json()).then((response) => {
+		HttpService.getTwitch(this.state.index).then((response) => response.json()).then((response) => {
 			this.state.streams = response.streams;
 			this.setState({
 				loading: false,
 				dataSource: this.state.dataSource.cloneWithRows(this.state.streams),
+				index: 1 + response.streams.length,
+				size: response._total
 			});
 		}).catch((response) => {
 			console.error(response);
 		}).done();
+	}
+	getMoreTwitch = () => {
+		if(this.state.dataSource._dataBlob.s1.length >= this.state.size){
+			return;
+		}
+
+		HttpService.getTwitch(this.state.index).then((response) => response.json()).then((response) => {
+			let length = this.state.dataSource._dataBlob.s1.length+response.streams.length;
+			let more = this.state.dataSource._dataBlob.s1.concat(response.streams);
+			this.setState({
+				dataSource: this.state.dataSource.cloneWithRows(more),
+				index: length+1
+			});
+		}).catch((response) => {
+			console.error(response);
+		}).done();		
 	}
 	forward = (row) => {
 		this.props.navigator.push({
@@ -57,6 +77,7 @@ export default class TwitchComponent extends Component{
 					dataSource={this.state.dataSource}
 					renderRow={this.renderRow.bind(this)}
 					style={styles.listView}
+					onEndReached={this.getMoreTwitch.bind(this)}
 				  />
 				</View>
 			);

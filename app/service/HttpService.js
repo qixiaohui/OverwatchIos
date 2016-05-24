@@ -17,8 +17,8 @@ export default {
 
 		return fetch(Urls.news, options);
 	},
-	getTwitch: function(){
-		return fetch(Urls.twitch);
+	getTwitch: function(index){
+		return fetch(Urls.twitch+"&offset="+index);
 	},
 	getTwits: function(){
 		var today = new Date();
