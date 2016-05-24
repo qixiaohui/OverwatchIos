@@ -17,20 +17,43 @@ export default class NewsComponent extends Component{
 	constructor(props){
 		super(props);
 		this.state = {
+			index: 1,
 			loading: true,
 			news: null,
+			size: 0,
 			dataSource: new ListView.DataSource({
     			rowHasChanged: (row1, row2) => row1 !== row2,        
 			}),
 		}
 	}
-	getNews = (index) => {
-		HttpService.getDingDangNews(index).then((response) => response.json()).then((response) => {
+	getNews = () => {
+		HttpService.getDingDangNews(this.state.index).then((response) => response.json()).then((response) => {
 			this.state.news = response.results;
 			this.setState({
 				dataSource: this.state.dataSource.cloneWithRows(this.state.news),
-				loading: false
+				loading: false,
+				index: 1+response.results.length,
+				size: response.count
 			});
+
+		}).catch((response) => {
+			console.error(response);
+		}).done();
+	}
+	getMoreNews = () => {
+		if(this.state.dataSource._dataBlob.s1.length >= this.state.size){
+			return;
+		}
+
+		HttpService.getDingDangNews(this.state.index).then((response) => response.json()).then((response) => {
+			if(response.start >= this.state.dataSource._dataBlob.s1.length){
+				let length = this.state.dataSource._dataBlob.s1.length+response.results.length;
+				let more = this.state.dataSource._dataBlob.s1.concat(response.results);
+				this.setState({
+					dataSource: this.state.dataSource.cloneWithRows(more),
+					index: length+1
+				});
+			}
 
 		}).catch((response) => {
 			console.error(response);
@@ -51,6 +74,7 @@ export default class NewsComponent extends Component{
 					dataSource={this.state.dataSource}
 					renderRow={this.renderRow.bind(this)}
 					style={styles.listView}
+					onEndReached={this.getMoreNews.bind(this)}
 				  />
 				</View>
 			);
@@ -79,7 +103,7 @@ export default class NewsComponent extends Component{
 		);
 	}
 	componentDidMount() {
-		this.getNews(1);
+		this.getNews();
 	}
 }
 
